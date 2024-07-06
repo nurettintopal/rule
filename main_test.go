@@ -13,6 +13,13 @@ func TestEqualsOperator(t *testing.T) {
 		t.Errorf("Expected 5 not equals 10")
 	}
 
+	if !op.Apply(5.5, 5.5) {
+		t.Errorf("Expected 5.5 equals 5.5")
+	}
+	if op.Apply(5.5, 10.5) {
+		t.Errorf("Expected 5.5 not equals 10.5")
+	}
+
 	if !op.Apply("a", "a") {
 		t.Errorf("Expected a equals a")
 	}
@@ -28,6 +35,13 @@ func TestNotEqualsOperator(t *testing.T) {
 	}
 	if op.Apply(5, 5) {
 		t.Errorf("Expected 5 equals 5")
+	}
+
+	if !op.Apply(5.5, 10.5) {
+		t.Errorf("Expected 5.5 not equals 10.5")
+	}
+	if op.Apply(5.5, 5.5) {
+		t.Errorf("Expected 5.5 equals 5.5")
 	}
 
 	if !op.Apply("a", "b") {
@@ -113,6 +127,38 @@ func TestNotInOperator(t *testing.T) {
 	}
 	if op.Apply("Turkey", []string{"Turkey", "Germany"}) {
 		t.Errorf("Expected 'Turkey' in ['Turkey', 'Germany']")
+	}
+}
+
+func TestStartsWithOperator(t *testing.T) {
+	op := StartsWithOperator{}
+	if !op.Apply("Turkey", "Tur") {
+		t.Errorf("Expected Turkey not starts with Tur")
+	}
+}
+
+func TestEndsWithOperator(t *testing.T) {
+	op := EndsWithOperator{}
+	if !op.Apply("Turkey", "key") {
+		t.Errorf("Expected Turkey not ends with key")
+	}
+}
+
+func TestContainsOperator(t *testing.T) {
+	op := ContainsOperator{}
+	if !op.Apply("Turkey", "urke") {
+		t.Errorf("Expected Turkey not contains urke")
+	}
+}
+
+func TestRegexOperator(t *testing.T) {
+	op := RegexOperator{}
+	if !op.Apply("New York City", "[A-z]ork") {
+		t.Errorf("Expected New York City not contains regex")
+	}
+
+	if op.Apply("New York City", "[A-z]tanbul") {
+		t.Errorf("Expected New York City contains regex")
 	}
 }
 
@@ -206,6 +252,12 @@ func TestRun(t *testing.T) {
 	   "district":"Kadıköy"
 	}`
 
+	input2 := `{
+	   "country":"Korea",
+	   "city":"Seul",
+	   "district":"Samsung"
+	}`
+
 	rules := `{
 	   "conditions":[
 		  {
@@ -225,7 +277,29 @@ func TestRun(t *testing.T) {
 	   ]
 	}`
 
+	rules2 := `{
+	   "conditions":[
+		  {
+			 "all":[
+				{
+				   "field":"country",
+				   "operator":"notAnExistingRule",
+				   "value":"Türkiye"
+				}
+			 ]
+		  }
+	   ]
+	}`
+
 	if run(input, rules) != true {
 		t.Errorf("it is not passed")
+	}
+
+	if run(input2, rules) == true {
+		t.Errorf("it is passed")
+	}
+
+	if run(input2, rules2) == true {
+		t.Errorf("it is passed")
 	}
 }
