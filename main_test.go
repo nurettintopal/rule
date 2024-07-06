@@ -12,6 +12,13 @@ func TestEqualsOperator(t *testing.T) {
 	if op.Apply(5, 10) {
 		t.Errorf("Expected 5 not equals 10")
 	}
+
+	if !op.Apply("a", "a") {
+		t.Errorf("Expected a equals a")
+	}
+	if op.Apply("a", "b") {
+		t.Errorf("Expected a not equals b")
+	}
 }
 
 func TestNotEqualsOperator(t *testing.T) {
@@ -21,6 +28,13 @@ func TestNotEqualsOperator(t *testing.T) {
 	}
 	if op.Apply(5, 5) {
 		t.Errorf("Expected 5 equals 5")
+	}
+
+	if !op.Apply("a", "b") {
+		t.Errorf("Expected a not equals b")
+	}
+	if op.Apply("a", "a") {
+		t.Errorf("Expected a equals a")
 	}
 }
 
@@ -77,6 +91,18 @@ func TestInOperator(t *testing.T) {
 	}
 	if op.Apply("France", []string{"Turkey", "Germany"}) {
 		t.Errorf("Expected 'France' not in ['Turkey', 'Germany']")
+	}
+	if !op.Apply(100, []int{100, 200}) {
+		t.Errorf("Expected '100' in [100, 200]")
+	}
+	if op.Apply(300, []int{100, 200}) {
+		t.Errorf("Expected '300' not in [100, 200]")
+	}
+	if !op.Apply(100.1, []float64{100.1, 200.1}) {
+		t.Errorf("Expected '100.1' in [100.1, 200.1]")
+	}
+	if op.Apply(300.1, []float64{100.1, 200.1}) {
+		t.Errorf("Expected '300.1' not in [100.1, 200.1]")
 	}
 }
 
