@@ -132,8 +132,17 @@ Rules have been executed. it passed!
 ```
 
 
-## features
-* Multiple rules by all or any
+## operators
+| operator             | meaning                                         | 
+----------------------|-------------------------------------------------
+| equals               | equals to                                       |
+| notEquals            | not equal to                                    |
+| lessThan             | less than                                       |
+| greaterThan          | greater than                                    |
+| lessThanInclusive    | less than or equal to                           |
+| greaterThanInclusive | greater than or equal to                        |
+| in                   | in a list                                       |
+| notIn                | not in a list                                   |
 
 ## dependencies
 * Go
