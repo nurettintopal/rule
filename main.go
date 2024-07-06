@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"regexp"
+	"strings"
 )
 
 // Operator defines an interface for all operators
@@ -68,6 +70,35 @@ func (o NotInOperator) Apply(fieldValue, ruleValue interface{}) bool {
 	return !contains(fieldValue, ruleValue)
 }
 
+// StartsWithOperator checks if fieldValue starts with ruleValue
+type StartsWithOperator struct{}
+
+func (o StartsWithOperator) Apply(fieldValue, ruleValue interface{}) bool {
+	return strings.HasPrefix(fieldValue.(string), ruleValue.(string))
+}
+
+// EndsWithOperator checks if fieldValue ends with ruleValue
+type EndsWithOperator struct{}
+
+func (o EndsWithOperator) Apply(fieldValue, ruleValue interface{}) bool {
+	return strings.HasSuffix(fieldValue.(string), ruleValue.(string))
+}
+
+// ContainsOperator checks if fieldValue contains ruleValue
+type ContainsOperator struct{}
+
+func (o ContainsOperator) Apply(fieldValue, ruleValue interface{}) bool {
+	return strings.Contains(fieldValue.(string), ruleValue.(string))
+}
+
+// RegexOperator checks if fieldValue contains any match of the regular expression pattern
+type RegexOperator struct{}
+
+func (o RegexOperator) Apply(fieldValue, ruleValue interface{}) bool {
+	result, _ := regexp.MatchString(ruleValue.(string), fieldValue.(string))
+	return result
+}
+
 // OperatorFactory to create operators based on string representation
 type OperatorFactory struct{}
 
@@ -89,6 +120,14 @@ func (f OperatorFactory) Create(operator string) Operator {
 		return InOperator{}
 	case "notIn":
 		return NotInOperator{}
+	case "startsWith":
+		return StartsWithOperator{}
+	case "endsWith":
+		return EndsWithOperator{}
+	case "contains":
+		return ContainsOperator{}
+	case "regex":
+		return RegexOperator{}
 	default:
 		return nil
 	}
@@ -303,6 +342,21 @@ func main() {
 				   "value":[
 					  "Germany"
 				   ]
+				},
+				{
+				   "field":"country",
+				   "operator":"startsWith",
+				   "value":"Tur"
+				},
+				{
+				   "field":"country",
+				   "operator":"endsWith",
+				   "value":"Turkey"
+				},
+				{
+				   "field":"country",
+				   "operator":"contains",
+				   "value":"urk"
 				}
 			 ],
 			 "any":[

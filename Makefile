@@ -20,3 +20,6 @@ test-v: ## Run the tests
 
 test-cover: ## Run the tests
 	go test -cover
+
+test-cover-detail: ## Run the tests with coverage details
+	go test -coverprofile=coverage.out ./... && go tool cover -html=coverage.out
