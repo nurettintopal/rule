@@ -26,28 +26,100 @@ if you want to look into the details, follow [this link](https://en.wikipedia.or
 #### rules:
 ```json
 {
-  "conditions": [
+  "conditions":[
     {
-      "all": [
-        {"Field": "country", "Operator": "equals", "Value": "Turkey"},
-        {"Field": "city", "Operator": "equals", "Value": "Istanbul"},
-        {"Field": "district", "Operator": "equals", "Value": "Kadikoy"},
-        {"Field": "population", "Operator": "equals", "Value": 20000.00},
-        {"Field": "population", "Operator": "notEquals", "Value": 50000.00},
-        {"Field": "population", "Operator": "lessThan", "Value": 21000.00},
-        {"Field": "population", "Operator": "lessThanInclusive", "Value": 20000.00},
-        {"Field": "population", "Operator": "greaterThan", "Value": 19000.00},
-        {"Field": "population", "Operator": "greaterThanInclusive", "Value": 20000.00},
-        {"Field": "country", "Operator": "in", "Value": ["Turkey"]},
-        {"Field": "country", "Operator": "notIn", "Value": ["Germany"]}
+      "all":[
+        {
+          "field":"country",
+          "operator":"equals",
+          "value":"Turkey"
+        },
+        {
+          "field":"city",
+          "operator":"equals",
+          "value":"Istanbul"
+        },
+        {
+          "field":"district",
+          "operator":"equals",
+          "value":"Kadikoy"
+        },
+        {
+          "field":"population",
+          "operator":"equals",
+          "value":20000.00
+        },
+        {
+          "field":"population",
+          "operator":"notEquals",
+          "value":50000.00
+        },
+        {
+          "field":"population",
+          "operator":"lessThan",
+          "value":21000.00
+        },
+        {
+          "field":"population",
+          "operator":"lessThanInclusive",
+          "value":20000.00
+        },
+        {
+          "field":"population",
+          "operator":"greaterThan",
+          "value":19000.00
+        },
+        {
+          "field":"population",
+          "operator":"greaterThanInclusive",
+          "value":20000.00
+        },
+        {
+          "field":"country",
+          "operator":"in",
+          "value":[
+            "Turkey"
+          ]
+        },
+        {
+          "field":"country",
+          "operator":"notIn",
+          "value":[
+            "Germany"
+          ]
+        }
       ],
-      "any": [
-        {"Field": "country", "Operator": "equals", "Value": "England"},
-        {"Field": "city", "Operator": "equals", "Value": "London"},
-        {"Field": "population", "Operator": "equals", "Value": 200000.00},
-        {"Field": "country", "Operator": "equals", "Value": "Turkey"},
-        {"Field": "city", "Operator": "equals", "Value": "Madrid"},
-        {"Field": "population", "Operator": "equals", "Value": 1000.00}
+      "any":[
+        {
+          "field":"country",
+          "operator":"equals",
+          "value":"England"
+        },
+        {
+          "field":"city",
+          "operator":"equals",
+          "value":"London"
+        },
+        {
+          "field":"population",
+          "operator":"equals",
+          "value":200000.00
+        },
+        {
+          "field":"country",
+          "operator":"equals",
+          "value":"Turkey"
+        },
+        {
+          "field":"city",
+          "operator":"equals",
+          "value":"Madrid"
+        },
+        {
+          "field":"population",
+          "operator":"equals",
+          "value":1000.00
+        }
       ]
     }
   ]

@@ -9,9 +9,9 @@ import (
 
 // Rule represents a single condition
 type Rule struct {
-	Field    string      `json:"Field"`
-	Operator string      `json:"Operator"`
-	Value    interface{} `json:"Value"`
+	Field    string      `json:"field"`
+	Operator string      `json:"operator"`
+	Value    interface{} `json:"value"`
 }
 
 // ConditionSet represents a set of conditions with All/Any logic
@@ -130,59 +130,137 @@ func checkRuleSet(obj map[string]interface{}, ruleSet RuleSet) bool {
 	return true
 }
 
+func run(input string, rules string) bool {
+	var objs map[string]interface{}
+	err := json.Unmarshal([]byte(input), &objs)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var ruleSet RuleSet
+	err = json.Unmarshal([]byte(rules), &ruleSet)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if checkRuleSet(objs, ruleSet) {
+		return true
+	}
+	return false
+}
+
 func main() {
-	jsonData := `{
+	input := `{
 		"country": "Turkey",
 		"city": "Istanbul",
 		"district": "Kadikoy",
 		"population": 20000.00,
 		"language": "Turkish"
 	}`
-	var objs map[string]interface{}
-	err := json.Unmarshal([]byte(jsonData), &objs)
-	if err != nil {
-		log.Fatal(err)
-	}
 
-	ruleData := `{
-		"conditions": [
-			{
-				"all": [
-					{"Field": "country", "Operator": "equals", "Value": "Turkey"},
-					{"Field": "city", "Operator": "equals", "Value": "Istanbul"},
-					{"Field": "district", "Operator": "equals", "Value": "Kadikoy"},
-					{"Field": "population", "Operator": "equals", "Value": 20000.00},
-					{"Field": "population", "Operator": "notEquals", "Value": 50000.00},
-					{"Field": "population", "Operator": "lessThan", "Value": 21000.00},
-					{"Field": "population", "Operator": "lessThanInclusive", "Value": 20000.00},
-					{"Field": "population", "Operator": "greaterThan", "Value": 19000.00},
-					{"Field": "population", "Operator": "greaterThanInclusive", "Value": 20000.00},
-					{"Field": "country", "Operator": "in", "Value": ["Turkey"]},
-					{"Field": "country", "Operator": "notIn", "Value": ["Germany"]}
-				],
-				"any": [
-					{"Field": "country", "Operator": "equals", "Value": "England"},
-					{"Field": "city", "Operator": "equals", "Value": "London"},
-					{"Field": "population", "Operator": "equals", "Value": 200000.00},
-					{"Field": "country", "Operator": "equals", "Value": "Turkey"},
-					{"Field": "city", "Operator": "equals", "Value": "Madrid"},
-					{"Field": "population", "Operator": "equals", "Value": 1000.00}
-				]
-			}
-		]
+	rules := `{
+	   "conditions":[
+		  {
+			 "all":[
+				{
+				   "field":"country",
+				   "operator":"equals",
+				   "value":"Turkey"
+				},
+				{
+				   "field":"city",
+				   "operator":"equals",
+				   "value":"Istanbul"
+				},
+				{
+				   "field":"district",
+				   "operator":"equals",
+				   "value":"Kadikoy"
+				},
+				{
+				   "field":"population",
+				   "operator":"equals",
+				   "value":20000.00
+				},
+				{
+				   "field":"population",
+				   "operator":"notEquals",
+				   "value":50000.00
+				},
+				{
+				   "field":"population",
+				   "operator":"lessThan",
+				   "value":21000.00
+				},
+				{
+				   "field":"population",
+				   "operator":"lessThanInclusive",
+				   "value":20000.00
+				},
+				{
+				   "field":"population",
+				   "operator":"greaterThan",
+				   "value":19000.00
+				},
+				{
+				   "field":"population",
+				   "operator":"greaterThanInclusive",
+				   "value":20000.00
+				},
+				{
+				   "field":"country",
+				   "operator":"in",
+				   "value":[
+					  "Turkey"
+				   ]
+				},
+				{
+				   "field":"country",
+				   "operator":"notIn",
+				   "value":[
+					  "Germany"
+				   ]
+				}
+			 ],
+			 "any":[
+				{
+				   "field":"country",
+				   "operator":"equals",
+				   "value":"England"
+				},
+				{
+				   "field":"city",
+				   "operator":"equals",
+				   "value":"London"
+				},
+				{
+				   "field":"population",
+				   "operator":"equals",
+				   "value":200000.00
+				},
+				{
+				   "field":"country",
+				   "operator":"equals",
+				   "value":"Turkey"
+				},
+				{
+				   "field":"city",
+				   "operator":"equals",
+				   "value":"Madrid"
+				},
+				{
+				   "field":"population",
+				   "operator":"equals",
+				   "value":1000.00
+				}
+			 ]
+		  }
+	   ]
 	}`
 
-	var ruleSet RuleSet
-	err = json.Unmarshal([]byte(ruleData), &ruleSet)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if checkRuleSet(objs, ruleSet) {
+	if run(input, rules) {
 		fmt.Printf("Rules have been executed. it passed!")
-		fmt.Printf("")
 	} else {
 		fmt.Printf("Rules have been executed. it failed!")
-		fmt.Printf("")
 	}
 }
