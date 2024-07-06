@@ -29,53 +29,25 @@ if you want to look into the details, follow [this link](https://en.wikipedia.or
   "conditions": [
     {
       "all": [
-        {
-          "Field": "country",
-          "Operator": "==",
-          "Value": "Turkey"
-        },
-        {
-          "Field": "city",
-          "Operator": "==",
-          "Value": "Istanbul"
-        },
-        {
-          "Field": "district",
-          "Operator": "==",
-          "Value": "Kadikoy"
-        },
-        {
-          "Field": "population",
-          "Operator": "==",
-          "Value": 20000
-        },
-        {
-          "Field": "population",
-          "Operator": "<",
-          "Value": 21000
-        },
-        {
-          "Field": "population",
-          "Operator": ">",
-          "Value": 19000
-        }
+        {"Field": "country", "Operator": "equals", "Value": "Turkey"},
+        {"Field": "city", "Operator": "equals", "Value": "Istanbul"},
+        {"Field": "district", "Operator": "equals", "Value": "Kadikoy"},
+        {"Field": "population", "Operator": "equals", "Value": 20000.00},
+        {"Field": "population", "Operator": "notEquals", "Value": 50000.00},
+        {"Field": "population", "Operator": "lessThan", "Value": 21000.00},
+        {"Field": "population", "Operator": "lessThanInclusive", "Value": 20000.00},
+        {"Field": "population", "Operator": "greaterThan", "Value": 19000.00},
+        {"Field": "population", "Operator": "greaterThanInclusive", "Value": 20000.00},
+        {"Field": "country", "Operator": "in", "Value": ["Turkey"]},
+        {"Field": "country", "Operator": "notIn", "Value": ["Germany"]}
       ],
       "any": [
-        {
-          "Field": "country",
-          "Operator": "==",
-          "Value": "Turkey"
-        },
-        {
-          "Field": "city",
-          "Operator": "==",
-          "Value": "Madrid"
-        },
-        {
-          "Field": "population",
-          "Operator": "==",
-          "Value": 1000
-        }
+        {"Field": "country", "Operator": "equals", "Value": "England"},
+        {"Field": "city", "Operator": "equals", "Value": "London"},
+        {"Field": "population", "Operator": "equals", "Value": 200000.00},
+        {"Field": "country", "Operator": "equals", "Value": "Turkey"},
+        {"Field": "city", "Operator": "equals", "Value": "Madrid"},
+        {"Field": "population", "Operator": "equals", "Value": 1000.00}
       ]
     }
   ]

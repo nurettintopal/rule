@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"reflect"
 )
 
 // Rule represents a single condition
@@ -32,21 +33,40 @@ func checkRule(obj map[string]interface{}, rule Rule) bool {
 	}
 
 	switch rule.Operator {
-	case "==":
+	case "equals":
 		return fieldValue == rule.Value
-	case "!=":
+	case "notEquals":
 		return fieldValue != rule.Value
-	case ">":
+	case "greaterThan":
 		return compare(fieldValue, rule.Value) > 0
-	case "<":
+	case "lessThan":
 		return compare(fieldValue, rule.Value) < 0
-	case ">=":
+	case "greaterThanInclusive":
 		return compare(fieldValue, rule.Value) >= 0
-	case "<=":
+	case "lessThanInclusive":
 		return compare(fieldValue, rule.Value) <= 0
+	case "in":
+		return contains(fieldValue, rule.Value)
+	case "notIn":
+		return !contains(fieldValue, rule.Value)
 	default:
 		return false
 	}
+}
+
+// contains checks if a value is in an array of either strings or integers
+func contains(value, array interface{}) bool {
+	arr := reflect.ValueOf(array)
+
+	switch reflect.TypeOf(array).Kind() {
+	case reflect.Slice, reflect.Array:
+		for i := 0; i < arr.Len(); i++ {
+			if reflect.DeepEqual(arr.Index(i).Interface(), value) {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // compare compares two interface{} values
@@ -54,34 +74,26 @@ func compare(a, b interface{}) int {
 	switch a := a.(type) {
 	case float64:
 		b := b.(float64)
-		if a > b {
-			return 1
-		} else if a < b {
-			return -1
-		} else {
-			return 0
-		}
+		return compareValues(a, b)
 	case string:
 		b := b.(string)
-		if a > b {
-			return 1
-		} else if a < b {
-			return -1
-		} else {
-			return 0
-		}
+		return compareValues(a, b)
 	case int:
 		b := b.(int)
-		if a > b {
-			return 1
-		} else if a < b {
-			return -1
-		} else {
-			return 0
-		}
+		return compareValues(a, b)
 	default:
 		return 0
 	}
+}
+
+// compareValues compares two values of the same type
+func compareValues[T float64 | string | int](a, b T) int {
+	if a > b {
+		return 1
+	} else if a < b {
+		return -1
+	}
+	return 0
 }
 
 // checkConditionSet checks if a given JSON object satisfies a condition set
@@ -136,22 +148,25 @@ func main() {
 		"conditions": [
 			{
 				"all": [
-					{"Field": "country", "Operator": "==", "Value": "Turkey"},
-					{"Field": "city", "Operator": "==", "Value": "Istanbul"},
-					{"Field": "district", "Operator": "==", "Value": "Kadikoy"},
-					{"Field": "population", "Operator": "==", "Value": 20000.00},
-					{"Field": "population", "Operator": "<", "Value": 21000.00},
-					{"Field": "population", "Operator": ">", "Value": 19000.00}
+					{"Field": "country", "Operator": "equals", "Value": "Turkey"},
+					{"Field": "city", "Operator": "equals", "Value": "Istanbul"},
+					{"Field": "district", "Operator": "equals", "Value": "Kadikoy"},
+					{"Field": "population", "Operator": "equals", "Value": 20000.00},
+					{"Field": "population", "Operator": "notEquals", "Value": 50000.00},
+					{"Field": "population", "Operator": "lessThan", "Value": 21000.00},
+					{"Field": "population", "Operator": "lessThanInclusive", "Value": 20000.00},
+					{"Field": "population", "Operator": "greaterThan", "Value": 19000.00},
+					{"Field": "population", "Operator": "greaterThanInclusive", "Value": 20000.00},
+					{"Field": "country", "Operator": "in", "Value": ["Turkey"]},
+					{"Field": "country", "Operator": "notIn", "Value": ["Germany"]}
 				],
 				"any": [
-					{"Field": "country", "Operator": "==", "Value": "England"},
-					{"Field": "city", "Operator": "==", "Value": "London"},
-					{"Field": "population", "Operator": "==", "Value": 20000.00}
-				],
-				"any": [
-					{"Field": "country", "Operator": "==", "Value": "Turkey"},
-					{"Field": "city", "Operator": "==", "Value": "Madrid"},
-					{"Field": "population", "Operator": "==", "Value": 1000.00}
+					{"Field": "country", "Operator": "equals", "Value": "England"},
+					{"Field": "city", "Operator": "equals", "Value": "London"},
+					{"Field": "population", "Operator": "equals", "Value": 200000.00},
+					{"Field": "country", "Operator": "equals", "Value": "Turkey"},
+					{"Field": "city", "Operator": "equals", "Value": "Madrid"},
+					{"Field": "population", "Operator": "equals", "Value": 1000.00}
 				]
 			}
 		]
