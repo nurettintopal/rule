@@ -7,6 +7,93 @@ import (
 	"reflect"
 )
 
+// Operator defines an interface for all operators
+type Operator interface {
+	Apply(fieldValue, ruleValue interface{}) bool
+}
+
+// EqualsOperator checks if fieldValue equals ruleValue
+type EqualsOperator struct{}
+
+func (o EqualsOperator) Apply(fieldValue, ruleValue interface{}) bool {
+	return reflect.DeepEqual(fieldValue, ruleValue)
+}
+
+// NotEqualsOperator checks if fieldValue not equals ruleValue
+type NotEqualsOperator struct{}
+
+func (o NotEqualsOperator) Apply(fieldValue, ruleValue interface{}) bool {
+	return !reflect.DeepEqual(fieldValue, ruleValue)
+}
+
+// GreaterThanOperator checks if fieldValue is greater than ruleValue
+type GreaterThanOperator struct{}
+
+func (o GreaterThanOperator) Apply(fieldValue, ruleValue interface{}) bool {
+	return compare(fieldValue, ruleValue) > 0
+}
+
+// LessThanOperator checks if fieldValue is less than ruleValue
+type LessThanOperator struct{}
+
+func (o LessThanOperator) Apply(fieldValue, ruleValue interface{}) bool {
+	return compare(fieldValue, ruleValue) < 0
+}
+
+// GreaterThanInclusiveOperator checks if fieldValue is greater than or equals to ruleValue
+type GreaterThanInclusiveOperator struct{}
+
+func (o GreaterThanInclusiveOperator) Apply(fieldValue, ruleValue interface{}) bool {
+	return compare(fieldValue, ruleValue) >= 0
+}
+
+// LessThanInclusiveOperator checks if fieldValue is less than or equals to ruleValue
+type LessThanInclusiveOperator struct{}
+
+func (o LessThanInclusiveOperator) Apply(fieldValue, ruleValue interface{}) bool {
+	return compare(fieldValue, ruleValue) <= 0
+}
+
+// InOperator checks if fieldValue is in ruleValue array
+type InOperator struct{}
+
+func (o InOperator) Apply(fieldValue, ruleValue interface{}) bool {
+	return contains(fieldValue, ruleValue)
+}
+
+// NotInOperator checks if fieldValue is not in ruleValue array
+type NotInOperator struct{}
+
+func (o NotInOperator) Apply(fieldValue, ruleValue interface{}) bool {
+	return !contains(fieldValue, ruleValue)
+}
+
+// OperatorFactory to create operators based on string representation
+type OperatorFactory struct{}
+
+func (f OperatorFactory) Create(operator string) Operator {
+	switch operator {
+	case "equals":
+		return EqualsOperator{}
+	case "notEquals":
+		return NotEqualsOperator{}
+	case "greaterThan":
+		return GreaterThanOperator{}
+	case "lessThan":
+		return LessThanOperator{}
+	case "greaterThanInclusive":
+		return GreaterThanInclusiveOperator{}
+	case "lessThanInclusive":
+		return LessThanInclusiveOperator{}
+	case "in":
+		return InOperator{}
+	case "notIn":
+		return NotInOperator{}
+	default:
+		return nil
+	}
+}
+
 // Rule represents a single condition
 type Rule struct {
 	Field    string      `json:"field"`
@@ -25,39 +112,9 @@ type RuleSet struct {
 	Conditions []ConditionSet `json:"conditions"`
 }
 
-// checkRule checks if a single rule is satisfied by a given JSON object
-func checkRule(obj map[string]interface{}, rule Rule) bool {
-	fieldValue, exists := obj[rule.Field]
-	if !exists {
-		return false
-	}
-
-	switch rule.Operator {
-	case "equals":
-		return fieldValue == rule.Value
-	case "notEquals":
-		return fieldValue != rule.Value
-	case "greaterThan":
-		return compare(fieldValue, rule.Value) > 0
-	case "lessThan":
-		return compare(fieldValue, rule.Value) < 0
-	case "greaterThanInclusive":
-		return compare(fieldValue, rule.Value) >= 0
-	case "lessThanInclusive":
-		return compare(fieldValue, rule.Value) <= 0
-	case "in":
-		return contains(fieldValue, rule.Value)
-	case "notIn":
-		return !contains(fieldValue, rule.Value)
-	default:
-		return false
-	}
-}
-
 // contains checks if a value is in an array of either strings or integers
 func contains(value, array interface{}) bool {
 	arr := reflect.ValueOf(array)
-
 	switch reflect.TypeOf(array).Kind() {
 	case reflect.Slice, reflect.Array:
 		for i := 0; i < arr.Len(); i++ {
@@ -96,34 +153,58 @@ func compareValues[T float64 | string | int](a, b T) int {
 	return 0
 }
 
-// checkConditionSet checks if a given JSON object satisfies a condition set
-func checkConditionSet(obj map[string]interface{}, conditionSet ConditionSet) bool {
+// RuleChecker checks rules against an object
+type RuleChecker struct {
+	OperatorFactory OperatorFactory
+}
+
+func (rc RuleChecker) CheckRule(obj map[string]interface{}, rule Rule) bool {
+	fieldValue, exists := obj[rule.Field]
+	if !exists {
+		return false
+	}
+
+	operator := rc.OperatorFactory.Create(rule.Operator)
+	if operator == nil {
+		return false
+	}
+	return operator.Apply(fieldValue, rule.Value)
+}
+
+// ConditionSetChecker checks condition sets against an object
+type ConditionSetChecker struct {
+	RuleChecker RuleChecker
+}
+
+func (cc ConditionSetChecker) CheckConditionSet(obj map[string]interface{}, conditionSet ConditionSet) bool {
 	// Check "all" conditions
 	for _, rule := range conditionSet.All {
-		if !checkRule(obj, rule) {
+		if !cc.RuleChecker.CheckRule(obj, rule) {
 			return false
 		}
 	}
 
 	// Check "any" conditions
-	anyTrue := false
-	for _, rule := range conditionSet.Any {
-		if checkRule(obj, rule) {
-			anyTrue = true
-			break
+	if len(conditionSet.Any) > 0 {
+		for _, rule := range conditionSet.Any {
+			if cc.RuleChecker.CheckRule(obj, rule) {
+				return true
+			}
 		}
-	}
-	if !anyTrue && len(conditionSet.Any) > 0 {
 		return false
 	}
 
 	return true
 }
 
-// checkRuleSet checks if a given JSON object satisfies the entire rule set
-func checkRuleSet(obj map[string]interface{}, ruleSet RuleSet) bool {
+// RuleSetChecker checks rule sets against an object
+type RuleSetChecker struct {
+	ConditionSetChecker ConditionSetChecker
+}
+
+func (rsc RuleSetChecker) CheckRuleSet(obj map[string]interface{}, ruleSet RuleSet) bool {
 	for _, conditionSet := range ruleSet.Conditions {
-		if !checkConditionSet(obj, conditionSet) {
+		if !rsc.ConditionSetChecker.CheckConditionSet(obj, conditionSet) {
 			return false
 		}
 	}
@@ -143,10 +224,12 @@ func run(input string, rules string) bool {
 		log.Fatal(err)
 	}
 
-	if checkRuleSet(objs, ruleSet) {
-		return true
-	}
-	return false
+	operatorFactory := OperatorFactory{}
+	ruleChecker := RuleChecker{OperatorFactory: operatorFactory}
+	conditionSetChecker := ConditionSetChecker{RuleChecker: ruleChecker}
+	ruleSetChecker := RuleSetChecker{ConditionSetChecker: conditionSetChecker}
+
+	return ruleSetChecker.CheckRuleSet(objs, ruleSet)
 }
 
 func main() {
