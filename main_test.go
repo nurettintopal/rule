@@ -151,6 +151,13 @@ func TestContainsOperator(t *testing.T) {
 	}
 }
 
+func TestNotContainsOperator(t *testing.T) {
+	op := NotContainsOperator{}
+	if !op.Apply("Turkey", "man") {
+		t.Errorf("Expected Turkey contains man")
+	}
+}
+
 func TestRegexOperator(t *testing.T) {
 	op := RegexOperator{}
 	if !op.Apply("New York City", "[A-z]ork") {
@@ -297,6 +304,11 @@ func TestRun(t *testing.T) {
 				   "field":"country",
 				   "operator":"contains",
 				   "value": "rki"
+				},
+				{
+				   "field":"country",
+				   "operator":"notContains",
+				   "value": "erk:wq"
 				}
 			 ]
 		  }

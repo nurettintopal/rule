@@ -133,20 +133,21 @@ Rules have been executed. it passed!
 
 
 ## operators
-| operator             | meaning                  | 
-----------------------|--------------------------
-| equals               | equals to                |
-| notEquals            | not equal to             |
-| lessThan             | less than                |
-| greaterThan          | greater than             |
-| lessThanInclusive    | less than or equal to    |
-| greaterThanInclusive | greater than or equal to |
-| in                   | in a list                |
-| notIn                | not in a list            |
-| startsWith           | starts with              |
-| endsWith             | ends with                |
-| contains             | contains                 |
-| regex                | contains any match of the regular expression pattern                 |
+| operator             | meaning                                              | 
+----------------------|------------------------------------------------------
+| equals               | equals to                                            |
+| notEquals            | not equal to                                         |
+| lessThan             | less than                                            |
+| greaterThan          | greater than                                         |
+| lessThanInclusive    | less than or equal to                                |
+| greaterThanInclusive | greater than or equal to                             |
+| in                   | in a list                                            |
+| notIn                | not in a list                                        |
+| startsWith           | starts with                                          |
+| endsWith             | ends with                                            |
+| contains             | contains                                             |
+| notContains          | not contains                                         |
+| regex                | contains any match of the regular expression pattern |
 
 ## dependencies
 * Go

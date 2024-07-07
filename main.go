@@ -91,6 +91,13 @@ func (o ContainsOperator) Apply(fieldValue, ruleValue interface{}) bool {
 	return strings.Contains(fieldValue.(string), ruleValue.(string))
 }
 
+// NotContainsOperator checks if fieldValue does not contains ruleValue
+type NotContainsOperator struct{}
+
+func (o NotContainsOperator) Apply(fieldValue, ruleValue interface{}) bool {
+	return !strings.Contains(fieldValue.(string), ruleValue.(string))
+}
+
 // RegexOperator checks if fieldValue contains any match of the regular expression pattern
 type RegexOperator struct{}
 
@@ -126,6 +133,8 @@ func (f OperatorFactory) Create(operator string) Operator {
 		return EndsWithOperator{}
 	case "contains":
 		return ContainsOperator{}
+	case "notContains":
+		return NotContainsOperator{}
 	case "regex":
 		return RegexOperator{}
 	default:
@@ -276,7 +285,7 @@ func main() {
 		"country": "Turkey",
 		"city": "Istanbul",
 		"district": "Kadikoy",
-		"population": 20000.00,
+		"population": 2000000.00,
 		"language": "Turkish"
 	}`
 
@@ -290,105 +299,16 @@ func main() {
 				   "value":"Turkey"
 				},
 				{
-				   "field":"city",
-				   "operator":"equals",
-				   "value":"Istanbul"
-				},
-				{
-				   "field":"district",
-				   "operator":"equals",
-				   "value":"Kadikoy"
-				},
-				{
-				   "field":"population",
-				   "operator":"equals",
-				   "value":20000.00
-				},
-				{
-				   "field":"population",
-				   "operator":"notEquals",
-				   "value":50000.00
-				},
-				{
 				   "field":"population",
 				   "operator":"lessThan",
-				   "value":21000.00
-				},
-				{
-				   "field":"population",
-				   "operator":"lessThanInclusive",
-				   "value":20000.00
-				},
-				{
-				   "field":"population",
-				   "operator":"greaterThan",
-				   "value":19000.00
-				},
-				{
-				   "field":"population",
-				   "operator":"greaterThanInclusive",
-				   "value":20000.00
-				},
-				{
-				   "field":"country",
-				   "operator":"in",
-				   "value":[
-					  "Turkey"
-				   ]
-				},
-				{
-				   "field":"country",
-				   "operator":"notIn",
-				   "value":[
-					  "Germany"
-				   ]
-				},
-				{
-				   "field":"country",
-				   "operator":"startsWith",
-				   "value":"Tur"
-				},
-				{
-				   "field":"country",
-				   "operator":"endsWith",
-				   "value":"Turkey"
-				},
-				{
-				   "field":"country",
-				   "operator":"contains",
-				   "value":"urk"
+				   "value": 2000000.01
 				}
 			 ],
 			 "any":[
 				{
 				   "field":"country",
-				   "operator":"equals",
-				   "value":"England"
-				},
-				{
-				   "field":"city",
-				   "operator":"equals",
-				   "value":"London"
-				},
-				{
-				   "field":"population",
-				   "operator":"equals",
-				   "value":200000.00
-				},
-				{
-				   "field":"country",
-				   "operator":"equals",
-				   "value":"Turkey"
-				},
-				{
-				   "field":"city",
-				   "operator":"equals",
-				   "value":"Madrid"
-				},
-				{
-				   "field":"population",
-				   "operator":"equals",
-				   "value":1000.00
+				   "operator":"in",
+				   "value": ["Turkey", "England"]
 				}
 			 ]
 		  }
