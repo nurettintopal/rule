@@ -190,7 +190,7 @@ func TestCheckRule(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		result := ruleChecker.CheckRule(obj, test.rule)
+		result := ruleChecker.CheckRule(obj, test.rule, nil)
 		if result != test.expected {
 			t.Errorf("CheckRule(%v, %v) = %v; expected %v", obj, test.rule, result, test.expected)
 		}
@@ -217,7 +217,7 @@ func TestCheckConditionSet(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		result := conditionSetChecker.CheckConditionSet(obj, test.conditionSet)
+		result := conditionSetChecker.CheckConditionSet(obj, test.conditionSet, nil)
 		if result != test.expected {
 			t.Errorf("CheckConditionSet(%v, %v) = %v; expected %v", obj, test.conditionSet, result, test.expected)
 		}
@@ -245,7 +245,7 @@ func TestCheckRuleSet(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		result := ruleSetChecker.CheckRuleSet(obj, test.ruleSet)
+		result := ruleSetChecker.CheckRuleSet(obj, test.ruleSet, nil)
 		if result != test.expected {
 			t.Errorf("CheckRuleSet(%v, %v) = %v; expected %v", obj, test.ruleSet, result, test.expected)
 		}
@@ -257,13 +257,15 @@ func TestRun(t *testing.T) {
 	   "country":"Türkiye",
 	   "city":"İstanbul",
 	   "district":"Kadıköy",
-	   "cityNumber":100
+	   "cityNumber": 100,
+       "population": 100
 	}`
 
 	input2 := `{
 	   "country":"Korea",
 	   "city":"Seul",
-	   "district":"Samsung"
+	   "district":"Samsung",
+       "population": 100
 	}`
 
 	rules := `{
@@ -357,24 +359,128 @@ func TestRun(t *testing.T) {
 	   ]
 	}`
 
-	if run(input, rules) != true {
+	rules5 := `{
+	   "conditions":[
+		  {
+			 "all":[
+				{
+				   "field":"population",
+				   "operator":"custom.eligible",
+				   "value": true
+				}
+			 ]
+		  }
+	   ]
+	}`
+
+	rules6 := `{
+	   "conditions":[
+		  {
+			 "all":[
+				{
+				   "field":"external.score",
+				   "operator":"greaterThan",
+				   "value": 4.0
+				}
+			 ]
+		  }
+	   ]
+	}`
+
+	rules7 := `{
+	   "conditions":[
+		  {
+			 "all":[
+				{
+				   "field":"external.not",
+				   "operator":"greaterThan",
+				   "value": 4.0
+				}
+			 ]
+		  }
+	   ]
+	}`
+
+	rules8 := `{
+	   "conditions":[
+		  {
+			 "all":[
+				{
+				   "field":"country",
+				   "operator":"custom.not",
+				   "value": 4.0
+				}
+			 ]
+		  }
+	   ]
+	}`
+
+	rules9 := `{
+	   "conditions":[
+		  {
+			 "all":[
+				{
+				   "field":"limit",
+				   "operator":"greaterThan",
+				   "value": 4.0
+				}
+			 ]
+		  }
+	   ]
+	}`
+
+	if execute(input, rules, nil) != true {
 		t.Errorf("it is not passed")
 	}
 
-	if run(input2, rules) == true {
+	if execute(input2, rules, nil) == true {
 		t.Errorf("it is passed")
 	}
 
-	if run(input2, rules2) == true {
+	if execute(input2, rules2, nil) == true {
 		t.Errorf("it is passed")
 	}
 
-	if run(input2, rules3) == true {
+	if execute(input2, rules3, nil) == true {
 		t.Errorf("it is passed")
 	}
 
-	if run(input2, rules4) == true {
+	if execute(input2, rules4, nil) == true {
 		t.Errorf("it is passed")
 	}
 
+	custom := map[string]CustomOperation{
+		"score": &CustomCountryScore{},
+		"eligible": &CustomRuleEligible{},
+	}
+
+	if execute(input2, rules5, custom) != true {
+		t.Errorf("it is not passed")
+	}
+
+	if execute(input2, rules6, custom) != true {
+		t.Errorf("it is not passed")
+	}
+
+	if execute(input2, rules7, custom) == true {
+		t.Errorf("it is passed")
+	}
+
+	if execute(input2, rules8, custom) == true {
+		t.Errorf("it is passed")
+	}
+
+	if execute(input2, rules9, custom) == true {
+		t.Errorf("it is passed")
+	}
+}
+
+func TestRunWithInvalidJSON(t *testing.T)  {
+	if execute("", "", nil) == true {
+		t.Errorf("it is passed")
+	}
+
+	if execute("{}", "", nil) == true {
+		t.Errorf("it is passed")
+	}
 }

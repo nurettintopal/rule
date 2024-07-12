@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"reflect"
 	"regexp"
 	"strings"
@@ -206,17 +205,49 @@ type RuleChecker struct {
 	OperatorFactory OperatorFactory
 }
 
-func (rc RuleChecker) CheckRule(obj map[string]interface{}, rule Rule) bool {
-	fieldValue, exists := obj[rule.Field]
-	if !exists {
-		return false
+func (rc RuleChecker) CheckRule(obj map[string]interface{}, rule Rule, custom map[string]CustomOperation) bool {
+	//log.Println(custom)
+	//log.Println(rule.Field)
+	//log.Println(rule.Operator)
+	//TODO: operation, exists := custom[operationName]
+
+	var fieldValue interface{}
+	var exists bool
+	if strings.HasPrefix(rule.Field, "external") {
+		fields := strings.Split(rule.Field, ".")
+		field := fields[1]
+
+		operation, exists := custom[field]
+		fmt.Println(operation, exists)
+		if !exists {
+			return false
+		}
+		fieldValue = operation.Execute(obj, rule.Field)
+	} else {
+		fieldValue, exists = obj[rule.Field]
+		if !exists {
+			return false
+		}
 	}
 
-	operator := rc.OperatorFactory.Create(rule.Operator)
-	if operator == nil {
-		return false
+	if strings.HasPrefix(rule.Operator, "custom") {
+		fields := strings.Split(rule.Operator, ".")
+		field := fields[1]
+
+		operation, exists := custom[field]
+		if !exists {
+			return false
+		}
+		fieldValue = operation.Execute(obj, rule.Field)
+
+		return fieldValue == true
+	} else {
+		operator := rc.OperatorFactory.Create(rule.Operator)
+		if operator == nil {
+			return false
+		}
+		return operator.Apply(fieldValue, rule.Value)
 	}
-	return operator.Apply(fieldValue, rule.Value)
 }
 
 // ConditionSetChecker checks condition sets against an object
@@ -224,10 +255,10 @@ type ConditionSetChecker struct {
 	RuleChecker RuleChecker
 }
 
-func (cc ConditionSetChecker) CheckConditionSet(obj map[string]interface{}, conditionSet ConditionSet) bool {
+func (cc ConditionSetChecker) CheckConditionSet(obj map[string]interface{}, conditionSet ConditionSet, custom map[string]CustomOperation) bool {
 	// Check "all" conditions
 	for _, rule := range conditionSet.All {
-		if !cc.RuleChecker.CheckRule(obj, rule) {
+		if !cc.RuleChecker.CheckRule(obj, rule, custom) {
 			return false
 		}
 	}
@@ -235,7 +266,7 @@ func (cc ConditionSetChecker) CheckConditionSet(obj map[string]interface{}, cond
 	// Check "any" conditions
 	if len(conditionSet.Any) > 0 {
 		for _, rule := range conditionSet.Any {
-			if cc.RuleChecker.CheckRule(obj, rule) {
+			if cc.RuleChecker.CheckRule(obj, rule, custom) {
 				return true
 			}
 		}
@@ -250,26 +281,26 @@ type RuleSetChecker struct {
 	ConditionSetChecker ConditionSetChecker
 }
 
-func (rsc RuleSetChecker) CheckRuleSet(obj map[string]interface{}, ruleSet RuleSet) bool {
+func (rsc RuleSetChecker) CheckRuleSet(obj map[string]interface{}, ruleSet RuleSet, custom map[string]CustomOperation) bool {
 	for _, conditionSet := range ruleSet.Conditions {
-		if !rsc.ConditionSetChecker.CheckConditionSet(obj, conditionSet) {
+		if !rsc.ConditionSetChecker.CheckConditionSet(obj, conditionSet, custom) {
 			return false
 		}
 	}
 	return true
 }
 
-func run(input string, rules string) bool {
+func execute(input string, rules string, custom map[string]CustomOperation) bool {
 	var objs map[string]interface{}
 	err := json.Unmarshal([]byte(input), &objs)
 	if err != nil {
-		log.Fatal(err)
+		return false
 	}
 
 	var ruleSet RuleSet
 	err = json.Unmarshal([]byte(rules), &ruleSet)
 	if err != nil {
-		log.Fatal(err)
+		return false
 	}
 
 	operatorFactory := OperatorFactory{}
@@ -277,7 +308,7 @@ func run(input string, rules string) bool {
 	conditionSetChecker := ConditionSetChecker{RuleChecker: ruleChecker}
 	ruleSetChecker := RuleSetChecker{ConditionSetChecker: conditionSetChecker}
 
-	return ruleSetChecker.CheckRuleSet(objs, ruleSet)
+	return ruleSetChecker.CheckRuleSet(objs, ruleSet, custom)
 }
 
 func main() {
@@ -294,14 +325,14 @@ func main() {
 		  {
 			 "all":[
 				{
-				   "field":"country",
-				   "operator":"equals",
-				   "value":"Turkey"
+				   "field":"external.score",
+				   "operator":"greaterThan",
+				   "value":4
 				},
 				{
 				   "field":"population",
-				   "operator":"lessThan",
-				   "value": 2000000.01
+				   "operator":"custom.eligible",
+				   "value": true
 				}
 			 ],
 			 "any":[
@@ -315,9 +346,36 @@ func main() {
 	   ]
 	}`
 
-	if run(input, rules) {
+	custom := map[string]CustomOperation{
+		"score":    &CustomCountryScore{},
+		"eligible": &CustomRuleEligible{},
+	}
+
+	if execute(input, rules, custom) {
 		fmt.Printf("Rules have been executed. it passed!")
 	} else {
 		fmt.Printf("Rules have been executed. it failed!")
 	}
+}
+
+// CustomOperation defines the interface for custom operations
+type CustomOperation interface {
+	Execute(input, value interface{}) interface{}
+}
+
+// CustomOperation implementations
+type CustomRuleEligible struct{}
+
+func (o *CustomRuleEligible) Execute(input, value interface{}) interface{} {
+	fmt.Println("DEBUG: CustomRuleEligible Execute", input, value)
+	return true
+}
+
+// CustomOperation implementations
+type CustomCountryScore struct{}
+
+func (o *CustomCountryScore) Execute(input, value interface{}) interface{} {
+	fmt.Println("DEBUG: CustomCountryScore Execute", input, value)
+	//TODO: there should be some implementation here.
+	return 4.6
 }
