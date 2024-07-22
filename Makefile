@@ -1,4 +1,4 @@
-project_name = rule-engine
+project_name = rule
 
 help: ## This help dialog.
 	@grep -F -h "##" $(MAKEFILE_LIST) | grep -F -v fgrep | sed -e 's/\\$$//' | sed -e 's/##//'

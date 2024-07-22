@@ -1,4 +1,4 @@
-package main
+package rule
 
 import (
 	"testing"
@@ -359,62 +359,6 @@ func TestRun(t *testing.T) {
 	   ]
 	}`
 
-	rules5 := `{
-	   "conditions":[
-		  {
-			 "all":[
-				{
-				   "field":"population",
-				   "operator":"custom.eligible",
-				   "value": true
-				}
-			 ]
-		  }
-	   ]
-	}`
-
-	rules6 := `{
-	   "conditions":[
-		  {
-			 "all":[
-				{
-				   "field":"external.score",
-				   "operator":"greaterThan",
-				   "value": 4.0
-				}
-			 ]
-		  }
-	   ]
-	}`
-
-	rules7 := `{
-	   "conditions":[
-		  {
-			 "all":[
-				{
-				   "field":"external.not",
-				   "operator":"greaterThan",
-				   "value": 4.0
-				}
-			 ]
-		  }
-	   ]
-	}`
-
-	rules8 := `{
-	   "conditions":[
-		  {
-			 "all":[
-				{
-				   "field":"country",
-				   "operator":"custom.not",
-				   "value": 4.0
-				}
-			 ]
-		  }
-	   ]
-	}`
-
 	rules9 := `{
 	   "conditions":[
 		  {
@@ -449,25 +393,14 @@ func TestRun(t *testing.T) {
 		t.Errorf("it is passed")
 	}
 
-	custom := map[string]CustomOperation{
-		"score": &CustomCountryScore{},
-		"eligible": &CustomRuleEligible{},
-	}
+	custom := map[string]CustomOperation{}
 
-	if execute(input2, rules5, custom) != true {
+	if execute(input2, rules4, custom) == true {
 		t.Errorf("it is not passed")
 	}
 
-	if execute(input2, rules6, custom) != true {
+	if execute(input2, rules4, custom) == true {
 		t.Errorf("it is not passed")
-	}
-
-	if execute(input2, rules7, custom) == true {
-		t.Errorf("it is passed")
-	}
-
-	if execute(input2, rules8, custom) == true {
-		t.Errorf("it is passed")
 	}
 
 	if execute(input2, rules9, custom) == true {

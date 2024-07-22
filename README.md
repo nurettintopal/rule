@@ -1,6 +1,6 @@
-rule-engine
+rule
 ==============================================
-a basic rule engine implementation in Golang
+a basic rule engine package in Golang
 
 ## what is a rule engine?
 
