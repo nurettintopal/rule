@@ -290,7 +290,7 @@ func (rsc RuleSetChecker) CheckRuleSet(obj map[string]interface{}, ruleSet RuleS
 	return true
 }
 
-func execute(input string, rules string, custom map[string]CustomOperation) bool {
+func Execute(input string, rules string, custom map[string]CustomOperation) bool {
 	var objs map[string]interface{}
 	err := json.Unmarshal([]byte(input), &objs)
 	if err != nil {
@@ -311,11 +311,7 @@ func execute(input string, rules string, custom map[string]CustomOperation) bool
 	return ruleSetChecker.CheckRuleSet(objs, ruleSet, custom)
 }
 
-
-
 // CustomOperation defines the interface for custom operations
 type CustomOperation interface {
 	Execute(input, value interface{}) interface{}
 }
-
-

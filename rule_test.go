@@ -373,47 +373,47 @@ func TestRun(t *testing.T) {
 	   ]
 	}`
 
-	if execute(input, rules, nil) != true {
+	if Execute(input, rules, nil) != true {
 		t.Errorf("it is not passed")
 	}
 
-	if execute(input2, rules, nil) == true {
+	if Execute(input2, rules, nil) == true {
 		t.Errorf("it is passed")
 	}
 
-	if execute(input2, rules2, nil) == true {
+	if Execute(input2, rules2, nil) == true {
 		t.Errorf("it is passed")
 	}
 
-	if execute(input2, rules3, nil) == true {
+	if Execute(input2, rules3, nil) == true {
 		t.Errorf("it is passed")
 	}
 
-	if execute(input2, rules4, nil) == true {
+	if Execute(input2, rules4, nil) == true {
 		t.Errorf("it is passed")
 	}
 
 	custom := map[string]CustomOperation{}
 
-	if execute(input2, rules4, custom) == true {
+	if Execute(input2, rules4, custom) == true {
 		t.Errorf("it is not passed")
 	}
 
-	if execute(input2, rules4, custom) == true {
+	if Execute(input2, rules4, custom) == true {
 		t.Errorf("it is not passed")
 	}
 
-	if execute(input2, rules9, custom) == true {
+	if Execute(input2, rules9, custom) == true {
 		t.Errorf("it is passed")
 	}
 }
 
-func TestRunWithInvalidJSON(t *testing.T)  {
-	if execute("", "", nil) == true {
+func TestRunWithInvalidJSON(t *testing.T) {
+	if Execute("", "", nil) == true {
 		t.Errorf("it is passed")
 	}
 
-	if execute("{}", "", nil) == true {
+	if Execute("{}", "", nil) == true {
 		t.Errorf("it is passed")
 	}
 }
