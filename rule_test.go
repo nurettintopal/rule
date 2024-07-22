@@ -2,6 +2,7 @@ package rule
 
 import (
 	"testing"
+	"fmt"
 )
 
 func TestEqualsOperator(t *testing.T) {
@@ -373,47 +374,260 @@ func TestRun(t *testing.T) {
 	   ]
 	}`
 
-	if execute(input, rules, nil) != true {
+	if Execute(input, rules, nil) != true {
 		t.Errorf("it is not passed")
 	}
 
-	if execute(input2, rules, nil) == true {
+	if Execute(input2, rules, nil) == true {
 		t.Errorf("it is passed")
 	}
 
-	if execute(input2, rules2, nil) == true {
+	if Execute(input2, rules2, nil) == true {
 		t.Errorf("it is passed")
 	}
 
-	if execute(input2, rules3, nil) == true {
+	if Execute(input2, rules3, nil) == true {
 		t.Errorf("it is passed")
 	}
 
-	if execute(input2, rules4, nil) == true {
+	if Execute(input2, rules4, nil) == true {
 		t.Errorf("it is passed")
 	}
 
 	custom := map[string]CustomOperation{}
 
-	if execute(input2, rules4, custom) == true {
+	if Execute(input2, rules4, custom) == true {
 		t.Errorf("it is not passed")
 	}
 
-	if execute(input2, rules4, custom) == true {
+	if Execute(input2, rules4, custom) == true {
 		t.Errorf("it is not passed")
 	}
 
-	if execute(input2, rules9, custom) == true {
+	if Execute(input2, rules9, custom) == true {
 		t.Errorf("it is passed")
 	}
 }
 
-func TestRunWithInvalidJSON(t *testing.T)  {
-	if execute("", "", nil) == true {
+func TestRunWithInvalidJSON(t *testing.T) {
+	if Execute("", "", nil) == true {
 		t.Errorf("it is passed")
 	}
 
-	if execute("{}", "", nil) == true {
+	if Execute("{}", "", nil) == true {
 		t.Errorf("it is passed")
 	}
+}
+
+
+func TestRunWithCustomInput(t *testing.T) {
+
+	input := `{}`
+
+	rules1 := `{
+	   "conditions":[
+		  {
+			 "all":[
+				{
+				   "field":"external.input",
+				   "operator":"equals",
+				   "value": true
+				}
+			 ]
+		  }
+	   ]
+	}`
+
+	rules2 := `{
+	   "conditions":[
+		  {
+			 "all":[
+				{
+				   "field":"external.input",
+				   "operator":"equals",
+				   "value": false
+				}
+			 ]
+		  }
+	   ]
+	}`
+
+	custom := map[string]CustomOperation{
+		"input": &CustomInput{},
+	}
+
+	if Execute(input, rules1, custom) != true {
+		t.Errorf("it is not passed")
+	}
+
+	if Execute(input, rules2, custom) == true {
+		t.Errorf("it is passed")
+	}
+}
+
+func TestRunWithCustomOperator(t *testing.T) {
+
+	input1 := `{
+		"rate": 5.0
+	}`
+
+	input2 := `{
+		"rate": 5.0
+	}`
+
+	rules := `{
+	   "conditions":[
+		  {
+			 "all":[
+				{
+				   "field":"rate",
+				   "operator":"custom.control",
+				   "value": 5.0
+				}
+			 ]
+		  }
+	   ]
+	}`
+
+	custom := map[string]CustomOperation{
+		"control": &CustomControl{},
+	}
+
+	if Execute(input1, rules, custom) != true {
+		t.Errorf("it is not passed")
+	}
+
+	if Execute(input2, rules, custom) != true {
+		t.Errorf("it is passed")
+	}
+}
+
+func TestRunWithMultipleCondition(t *testing.T) {
+	input := `{
+		"id": "abc-def-ghi",
+		"point": 4.6
+	}`
+
+	rules := `{
+		   "conditions":[
+			  {
+				 "all":[
+					{
+					   "field":"id",
+					   "operator":"equals",
+					   "value":"abc-def-ghi"
+					},
+					{
+					   "field":"point",
+					   "operator":"equals",
+					   "value":4.6
+					}
+				 ],
+				 "any":[
+					{
+					   "field":"id",
+					   "operator":"equals",
+					   "value":"wrong-id"
+					},
+					{
+					   "field":"point",
+					   "operator":"equals",
+					   "value":4.6
+					}
+				 ]
+			  },
+              {
+				 "all":[
+					{
+					   "field":"id",
+					   "operator":"equals",
+					   "value":"abc-def-ghi"
+					},
+					{
+					   "field":"point",
+					   "operator":"equals",
+					   "value":4.6
+					}
+				 ],
+				 "any":[
+					{
+					   "field":"id",
+					   "operator":"equals",
+					   "value":"abc-def-ghi"
+					},
+					{
+					   "field":"point",
+					   "operator":"equals",
+					   "value":4.6
+					}
+				 ]
+			  }
+		   ]
+		}`
+
+	if Execute(input, rules, nil) != true {
+		t.Errorf("it is not passed")
+	}
+}
+
+func TestRunWithCustomOperatorButNotExist(t *testing.T) {
+
+	input := `{
+		"rate": 5.0
+	}`
+
+	rules1 := `{
+	   "conditions":[
+		  {
+			 "all":[
+				{
+				   "field":"rate",
+				   "operator":"custom.check",
+				   "value": 5.0
+				}
+			 ]
+		  }
+	   ]
+	}`
+
+	rules2 := `{
+	   "conditions":[
+		  {
+			 "all":[
+				{
+				   "field":"external.rate",
+				   "operator":"equal",
+				   "value": 5.0
+				}
+			 ]
+		  }
+	   ]
+	}`
+
+	custom := map[string]CustomOperation{}
+
+	if Execute(input, rules1, custom) == true {
+		t.Errorf("it is not passed")
+	}
+
+	if Execute(input, rules2, custom) == true {
+		t.Errorf("it is not passed")
+	}
+}
+
+// CustomInput implementations
+type CustomInput struct{}
+
+func (o *CustomInput) Execute(input, value interface{}) interface{} {
+	//fmt.Println("DEBUG: CustomInput Execute", input, value)
+	return true
+}
+
+// CustomControl implementations
+type CustomControl struct{}
+
+func (o *CustomControl) Execute(input, value interface{}) interface{} {
+	fmt.Println("DEBUG: CustomControl Execute", input, value)
+	//TODO: there should be some implementation here.
+	return true
 }

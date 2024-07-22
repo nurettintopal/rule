@@ -2,7 +2,6 @@ package rule
 
 import (
 	"encoding/json"
-	"fmt"
 	"reflect"
 	"regexp"
 	"strings"
@@ -179,9 +178,11 @@ func compare(a, b interface{}) int {
 	case float64:
 		b := b.(float64)
 		return compareValues(a, b)
+	/*
 	case string:
 		b := b.(string)
 		return compareValues(a, b)
+	*/
 	case int:
 		b := b.(int)
 		return compareValues(a, b)
@@ -206,11 +207,6 @@ type RuleChecker struct {
 }
 
 func (rc RuleChecker) CheckRule(obj map[string]interface{}, rule Rule, custom map[string]CustomOperation) bool {
-	//log.Println(custom)
-	//log.Println(rule.Field)
-	//log.Println(rule.Operator)
-	//TODO: operation, exists := custom[operationName]
-
 	var fieldValue interface{}
 	var exists bool
 	if strings.HasPrefix(rule.Field, "external") {
@@ -218,7 +214,6 @@ func (rc RuleChecker) CheckRule(obj map[string]interface{}, rule Rule, custom ma
 		field := fields[1]
 
 		operation, exists := custom[field]
-		fmt.Println(operation, exists)
 		if !exists {
 			return false
 		}
@@ -290,7 +285,7 @@ func (rsc RuleSetChecker) CheckRuleSet(obj map[string]interface{}, ruleSet RuleS
 	return true
 }
 
-func execute(input string, rules string, custom map[string]CustomOperation) bool {
+func Execute(input string, rules string, custom map[string]CustomOperation) bool {
 	var objs map[string]interface{}
 	err := json.Unmarshal([]byte(input), &objs)
 	if err != nil {
@@ -311,11 +306,7 @@ func execute(input string, rules string, custom map[string]CustomOperation) bool
 	return ruleSetChecker.CheckRuleSet(objs, ruleSet, custom)
 }
 
-
-
 // CustomOperation defines the interface for custom operations
 type CustomOperation interface {
 	Execute(input, value interface{}) interface{}
 }
-
-
