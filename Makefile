@@ -22,4 +22,5 @@ test-cover: ## Run the tests
 	go test -cover
 
 test-cover-detail: ## Run the tests with coverage details
-	go test -coverprofile=coverage.out ./... && go tool cover -html=coverage.out
+	go test -coverprofile=coverage.out ./ && go tool cover -html=coverage.out
+	sh ./badge.sh
