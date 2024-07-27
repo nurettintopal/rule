@@ -251,24 +251,48 @@ type ConditionSetChecker struct {
 }
 
 func (cc ConditionSetChecker) CheckConditionSet(obj map[string]interface{}, conditionSet ConditionSet, custom map[string]CustomOperation) bool {
-	// Check "all" conditions
-	for _, rule := range conditionSet.All {
-		if !cc.RuleChecker.CheckRule(obj, rule, custom) {
-			return false
-		}
-	}
+	allChan := make(chan bool)
+	anyChan := make(chan bool)
 
-	// Check "any" conditions
-	if len(conditionSet.Any) > 0 {
-		for _, rule := range conditionSet.Any {
-			if cc.RuleChecker.CheckRule(obj, rule, custom) {
-				return true
+	// Check "all" conditions in parallel
+	go func() {
+		for _, rule := range conditionSet.All {
+			if !cc.RuleChecker.CheckRule(obj, rule, custom) {
+				allChan <- false
+				close(allChan)
+				return
 			}
 		}
-		return false
+		allChan <- true
+		close(allChan)
+	}()
+
+	// Check "any" conditions in parallel
+	go func() {
+		for _, rule := range conditionSet.Any {
+			if cc.RuleChecker.CheckRule(obj, rule, custom) {
+				anyChan <- true
+				close(anyChan)
+				return
+			}
+		}
+		anyChan <- false
+		close(anyChan)
+	}()
+
+	allPass := true
+	anyPass := false
+	if len(conditionSet.All) > 0 {
+		allPass = <-allChan
 	}
 
-	return true
+	if len(conditionSet.Any) > 0 {
+		anyPass = <-anyChan
+	} else {
+		anyPass = true
+	}
+
+	return allPass && anyPass
 }
 
 // RuleSetChecker checks rule sets against an object
