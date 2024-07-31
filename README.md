@@ -1,14 +1,25 @@
+<h2 align="center">
+
 [![nurettintopal - rule](https://img.shields.io/static/v1?label=nurettintopal&message=rule&color=blue&logo=github)](https://github.com/nurettintopal/rule "Go to GitHub repo")
+[![GitHub release](https://img.shields.io/github/release/nurettintopal/rule?include_prereleases=&sort=semver&color=blue)](https://github.com/nurettintopal/rule/releases/)
+<img src="./badge.svg"/>
+![](https://img.shields.io/github/license/nurettintopal/rule)
+![](https://img.shields.io/github/repo-size/nurettintopal/rule)
+![](https://img.shields.io/github/commit-activity/w/nurettintopal/rule)
+![](https://img.shields.io/github/last-commit/nurettintopal/rule)
+![](https://img.shields.io/github/issues-pr/nurettintopal/rule)
+![](https://img.shields.io/github/issues/nurettintopal/rule)
+<br/>
 [![stars - rule](https://img.shields.io/github/stars/nurettintopal/rule?style=social)](https://github.com/nurettintopal/rule)
 [![forks - rule](https://img.shields.io/github/forks/nurettintopal/rule?style=social)](https://github.com/nurettintopal/rule)
-[![GitHub release](https://img.shields.io/github/release/nurettintopal/rule?include_prereleases=&sort=semver&color=blue)](https://github.com/nurettintopal/rule/releases/)
-[![License](https://img.shields.io/badge/License-MIT-blue)](#license)
-[![issues - rule](https://img.shields.io/github/issues/nurettintopal/rule)](https://github.com/nurettintopal/rule/issues)
-<img src="./badge.svg"/>
 
-rule
-==============================================
-a basic rule engine package in Golang
+</h2>
+
+<h1 align="center">Rule</h1>
+
+<p align="center"><strong>a basic rule engine package in Golang</strong></p>
+
+
 
 ## what is a rule engine?
 
