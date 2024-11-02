@@ -2,7 +2,6 @@ package rule
 
 import (
 	"testing"
-	"fmt"
 )
 
 func TestEqualsOperator(t *testing.T) {
@@ -615,6 +614,57 @@ func TestRunWithCustomOperatorButNotExist(t *testing.T) {
 	}
 }
 
+
+func TestRunWithInputArray(t *testing.T) {
+
+	input := `{
+		"countries": ["Turkey", "Japan", "Korea"]
+	}`
+
+	rules := `{
+	   "conditions":[
+		  {
+			 "all":[
+				{
+				   "field":"countries",
+				   "operator":"equals",
+				   "value": ["Turkey", "Japan", "Korea"]
+				}
+			 ]
+		  }
+	   ]
+	}`
+
+	if Execute(input, rules, nil) != true {
+		t.Errorf("it is not passed")
+	}
+}
+
+func TestRunWithInputObject(t *testing.T) {
+
+	input := `{
+		"location": { "country": "Turkey", "city": "Istanbul"}
+	}`
+
+	rules := `{
+	   "conditions":[
+		  {
+			 "all":[
+				{
+				   "field":"location",
+				   "operator":"equals",
+				   "value": { "country": "Turkey", "city": "Istanbul"}
+				}
+			 ]
+		  }
+	   ]
+	}`
+
+	if Execute(input, rules, nil) != true {
+		t.Errorf("it is not passed")
+	}
+}
+
 // CustomInput implementations
 type CustomInput struct{}
 
@@ -627,7 +677,7 @@ func (o *CustomInput) Execute(input, value interface{}) interface{} {
 type CustomControl struct{}
 
 func (o *CustomControl) Execute(input, value interface{}) interface{} {
-	fmt.Println("DEBUG: CustomControl Execute", input, value)
+	//fmt.Println("DEBUG: CustomControl Execute", input, value)
 	//TODO: there should be some implementation here.
 	return true
 }

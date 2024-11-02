@@ -15,7 +15,7 @@ type Operator interface {
 // EqualsOperator checks if fieldValue equals ruleValue
 type EqualsOperator struct{}
 
-func (o EqualsOperator) Apply(fieldValue, ruleValue interface{}) bool {
+func (o EqualsOperator) Apply(fieldValue interface{}, ruleValue interface{}) bool {
 	return reflect.DeepEqual(fieldValue, ruleValue)
 }
 
@@ -178,11 +178,6 @@ func compare(a, b interface{}) int {
 	case float64:
 		b := b.(float64)
 		return compareValues(a, b)
-	/*
-	case string:
-		b := b.(string)
-		return compareValues(a, b)
-	*/
 	case int:
 		b := b.(int)
 		return compareValues(a, b)
@@ -309,16 +304,25 @@ func (rsc RuleSetChecker) CheckRuleSet(obj map[string]interface{}, ruleSet RuleS
 	return true
 }
 
-func Execute(input string, rules string, custom map[string]CustomOperation) bool {
+// Execute evaluates the ruleset based on the input data
+func Execute(input interface{}, rules string, custom map[string]CustomOperation) bool {
 	var objs map[string]interface{}
-	err := json.Unmarshal([]byte(input), &objs)
-	if err != nil {
+
+	switch data := input.(type) {
+	case string:
+		// If input is JSON string, parse it
+		if err := json.Unmarshal([]byte(data), &objs); err != nil {
+			return false
+		}
+	case map[string]interface{}:
+		// If input is already a map, use it directly
+		objs = data
+	default:
 		return false
 	}
 
 	var ruleSet RuleSet
-	err = json.Unmarshal([]byte(rules), &ruleSet)
-	if err != nil {
+	if err := json.Unmarshal([]byte(rules), &ruleSet); err != nil {
 		return false
 	}
 
