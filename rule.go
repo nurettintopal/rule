@@ -58,14 +58,14 @@ func (o LessThanInclusiveOperator) Apply(fieldValue, ruleValue interface{}) bool
 type InOperator struct{}
 
 func (o InOperator) Apply(fieldValue, ruleValue interface{}) bool {
-	return contains(fieldValue, ruleValue)
+	return Contains(fieldValue, ruleValue)
 }
 
 // NotInOperator checks if fieldValue is not in ruleValue array
 type NotInOperator struct{}
 
 func (o NotInOperator) Apply(fieldValue, ruleValue interface{}) bool {
-	return !contains(fieldValue, ruleValue)
+	return !Contains(fieldValue, ruleValue)
 }
 
 // StartsWithOperator checks if fieldValue starts with ruleValue
@@ -159,7 +159,7 @@ type RuleSet struct {
 }
 
 // contains checks if a value is in an array of either strings or integers
-func contains(value, array interface{}) bool {
+func Contains(value, array interface{}) bool {
 	arr := reflect.ValueOf(array)
 	switch reflect.TypeOf(array).Kind() {
 	case reflect.Slice, reflect.Array:
@@ -228,7 +228,7 @@ func (rc RuleChecker) CheckRule(obj map[string]interface{}, rule Rule, custom ma
 		if !exists {
 			return false
 		}
-		fieldValue = operation.Execute(obj, rule.Field)
+		fieldValue = operation.Execute(obj[rule.Field], rule.Value)
 
 		return fieldValue == true
 	} else {
